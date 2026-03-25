@@ -12,11 +12,11 @@ import gradio as gr
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
-DEFAULT_CKPT_PATH = "D:\Large Model\Qwen2.5\qwen\Qwen2_5-0_5B-Instruct"
-
+# 👉 你的模型：Qwen3-0.6B
+DEFAULT_CKPT_PATH = "D:\Large Model\Qwen3.0\Qwen\Qwen3-0___6B"
 
 def _get_args():
-    parser = ArgumentParser(description="Qwen2.5-Instruct web chat demo.")
+    parser = ArgumentParser(description="Qwen3.0 web chat demo.")
     parser.add_argument(
         "-c",
         "--checkpoint-path",
@@ -41,7 +41,7 @@ def _get_args():
         help="Automatically launch the interface in a new tab on the default browser.",
     )
     parser.add_argument(
-        "--server-port", type=int, default=8000, help="Demo server port."
+        "--server-port", type=int, default=8002, help="Demo server port."
     )
     parser.add_argument(
         "--server-name", type=str, default="127.0.0.1", help="Demo server name."
@@ -68,7 +68,7 @@ def _load_model_tokenizer(args):
         device_map=device_map,
         resume_download=True,
     ).eval()
-    model.generation_config.max_new_tokens = 2048  # For chat.
+    model.generation_config.max_new_tokens = 2048
 
     return model, tokenizer
 
@@ -101,7 +101,6 @@ def _chat_stream(model, tokenizer, query, history):
 
 def _gc():
     import gc
-
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -116,13 +115,12 @@ def _launch_demo(args, model, tokenizer):
         for new_text in _chat_stream(model, tokenizer, _query, history=_task_history):
             response += new_text
             _chatbot[-1] = (_query, response)
-
             yield _chatbot
             full_response = response
 
         print(f"History: {_task_history}")
         _task_history.append((_query, full_response))
-        print(f"Qwen: {full_response}")
+        print(f"Qwen3: {full_response}")
 
     def regenerate(_chatbot, _task_history):
         if not _task_history:
@@ -142,49 +140,24 @@ def _launch_demo(args, model, tokenizer):
         return _chatbot
 
     with gr.Blocks() as demo:
-        gr.Markdown("""\
-<p align="center"><img src="https://qianwen-res.oss-accelerate-overseas.aliyuncs.com/assets/logo/qwen2.5_logo.png" style="height: 120px"/><p>""")
-        gr.Markdown(
-            """\
-<center><font size=3>This WebUI is based on Qwen2.5-Instruct, developed by Alibaba Cloud. \
-(本WebUI基于Qwen2.5-Instruct打造，实现聊天机器人功能。)</center>"""
-        )
-        gr.Markdown("""\
-<center><font size=4>
-Qwen2.5-7B-Instruct <a href="https://modelscope.cn/models/qwen/Qwen2.5-7B-Instruct/summary">🤖 </a> | 
-<a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct">🤗</a>&nbsp ｜ 
-Qwen2.5-32B-Instruct <a href="https://modelscope.cn/models/qwen/Qwen2.5-32B-Instruct/summary">🤖 </a> | 
-<a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">🤗</a>&nbsp ｜ 
-Qwen2.5-72B-Instruct <a href="https://modelscope.cn/models/qwen/Qwen2.5-72B-Instruct/summary">🤖 </a> | 
-<a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct">🤗</a>&nbsp ｜ 
-&nbsp<a href="https://github.com/QwenLM/Qwen2.5">Github</a></center>""")
+        # 👉 永久显示、不失效的 Qwen3.0 标题
+        gr.Markdown("""<p align="center" style="font-size:48px; font-weight:bold; color:#1E88E5;">Qwen3.0</p>""")
+        gr.Markdown("""<center><font size=3>This WebUI is based on Qwen3-0.6B, developed by Alibaba Cloud.</center>""")
+        gr.Markdown("""<center><font size=4>Qwen3-0.6B</center>""")
 
-        chatbot = gr.Chatbot(label="Qwen", elem_classes="control-height")
+        chatbot = gr.Chatbot(label="Qwen3", elem_classes="control-height")
         query = gr.Textbox(lines=2, label="Input")
         task_history = gr.State([])
 
         with gr.Row():
-            empty_btn = gr.Button("🧹 Clear History (清除历史)")
-            submit_btn = gr.Button("🚀 Submit (发送)")
-            regen_btn = gr.Button("🤔️ Regenerate (重试)")
+            empty_btn = gr.Button("🧹 Clear History")
+            submit_btn = gr.Button("🚀 Submit")
+            regen_btn = gr.Button("🤔️ Regenerate")
 
-        submit_btn.click(
-            predict, [query, chatbot, task_history], [chatbot], show_progress=True
-        )
+        submit_btn.click(predict, [query, chatbot, task_history], [chatbot])
         submit_btn.click(reset_user_input, [], [query])
-        empty_btn.click(
-            reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True
-        )
-        regen_btn.click(
-            regenerate, [chatbot, task_history], [chatbot], show_progress=True
-        )
-
-        gr.Markdown("""\
-<font size=2>Note: This demo is governed by the original license of Qwen2.5. \
-We strongly advise users not to knowingly generate or allow others to knowingly generate harmful content, \
-including hate speech, violence, pornography, deception, etc. \
-(注：本演示受Qwen2.5的许可协议限制。我们强烈建议，用户不应传播及不应允许他人传播以下内容，\
-包括但不限于仇恨言论、暴力、色情、欺诈相关的有害信息。)""")
+        empty_btn.click(reset_state, [chatbot, task_history], [chatbot])
+        regen_btn.click(regenerate, [chatbot, task_history], [chatbot])
 
     demo.queue().launch(
         share=args.share,
@@ -196,9 +169,7 @@ including hate speech, violence, pornography, deception, etc. \
 
 def main():
     args = _get_args()
-
     model, tokenizer = _load_model_tokenizer(args)
-
     _launch_demo(args, model, tokenizer)
 
 
