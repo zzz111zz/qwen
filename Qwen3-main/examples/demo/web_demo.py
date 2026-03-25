@@ -12,11 +12,11 @@ import gradio as gr
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
-DEFAULT_CKPT_PATH = "D:\Large Model\Qwen1.5\qwen\Qwen1___5-0___5B-chat"
+DEFAULT_CKPT_PATH = "D:\Large Model\Qwen2.5\qwen\Qwen2_5-0_5B-Instruct"
 
 
 def _get_args():
-    parser = ArgumentParser(description="Qwen1.5-Instruct web chat demo.")
+    parser = ArgumentParser(description="Qwen2.5-Instruct web chat demo.")
     parser.add_argument(
         "-c",
         "--checkpoint-path",
@@ -143,17 +143,21 @@ def _launch_demo(args, model, tokenizer):
 
     with gr.Blocks() as demo:
         gr.Markdown("""\
-<p align="center"><img src="https://qianwen-res.oss-accelerate-overseas.aliyuncs.com/assets/logo/qwen1.5_logo.png" style="height: 120px"/><p>""")
+<p align="center"><img src="https://qianwen-res.oss-accelerate-overseas.aliyuncs.com/assets/logo/qwen2.5_logo.png" style="height: 120px"/><p>""")
         gr.Markdown(
             """\
-<center><font size=3>This WebUI is based on Qwen1.5-Instruct, developed by Alibaba Cloud. \
-(本WebUI基于Qwen1.5-Instruct打造，实现聊天机器人功能。)</center>"""
+<center><font size=3>This WebUI is based on Qwen2.5-Instruct, developed by Alibaba Cloud. \
+(本WebUI基于Qwen2.5-Instruct打造，实现聊天机器人功能。)</center>"""
         )
         gr.Markdown("""\
 <center><font size=4>
-Qwen1.5-0.5B-Chat <a href="https://modelscope.cn/models/qwen/Qwen1.5-0.5B-Chat/summary">🤖 </a> | 
-<a href="https://huggingface.co/Qwen/Qwen1.5-0.5B-Chat">🤗</a>&nbsp ｜ 
-&nbsp<a href="https://github.com/QwenLM/Qwen1.5">Github</a></center>""")
+Qwen2.5-7B-Instruct <a href="https://modelscope.cn/models/qwen/Qwen2.5-7B-Instruct/summary">🤖 </a> | 
+<a href="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct">🤗</a>&nbsp ｜ 
+Qwen2.5-32B-Instruct <a href="https://modelscope.cn/models/qwen/Qwen2.5-32B-Instruct/summary">🤖 </a> | 
+<a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">🤗</a>&nbsp ｜ 
+Qwen2.5-72B-Instruct <a href="https://modelscope.cn/models/qwen/Qwen2.5-72B-Instruct/summary">🤖 </a> | 
+<a href="https://huggingface.co/Qwen/Qwen2.5-72B-Instruct">🤗</a>&nbsp ｜ 
+&nbsp<a href="https://github.com/QwenLM/Qwen2.5">Github</a></center>""")
 
         chatbot = gr.Chatbot(label="Qwen", elem_classes="control-height")
         query = gr.Textbox(lines=2, label="Input")
@@ -176,10 +180,10 @@ Qwen1.5-0.5B-Chat <a href="https://modelscope.cn/models/qwen/Qwen1.5-0.5B-Chat/s
         )
 
         gr.Markdown("""\
-<font size=2>Note: This demo is governed by the original license of Qwen1.5. \
+<font size=2>Note: This demo is governed by the original license of Qwen2.5. \
 We strongly advise users not to knowingly generate or allow others to knowingly generate harmful content, \
 including hate speech, violence, pornography, deception, etc. \
-(注：本演示受Qwen1.5的许可协议限制。我们强烈建议，用户不应传播及不应允许他人传播以下内容，\
+(注：本演示受Qwen2.5的许可协议限制。我们强烈建议，用户不应传播及不应允许他人传播以下内容，\
 包括但不限于仇恨言论、暴力、色情、欺诈相关的有害信息。)""")
 
     demo.queue().launch(
